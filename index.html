@@ -259,7 +259,7 @@
       // 座席情報を取得する関数
       function getSeatStatus(seatNumber) {
         const fieldCode = `席${seatNumber}`;
-        const status = record[fieldCode]?.value?.value || '';
+        const status = record[fieldCode]?.value || '';
         return status;
       }
 
@@ -268,7 +268,7 @@
         const status = getSeatStatus(seatNumber);
         const seat = document.createElement('div');
         
-        // ○ = 空席（緑）、それ以外 = 使用中（赤）
+        // ○ = 空席（緑）、× = 使用中（赤）
         if (status === '○') {
           seat.className = 'seat empty';
           emptyCount++;
