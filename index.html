@@ -13,7 +13,7 @@
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 600px;
       margin: 0 auto;
       background: #fff;
       padding: 20px;
@@ -47,56 +47,16 @@
 
     /* 全体レイアウト */
     .layout {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
       margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    /* 左側グループ（縦1列） */
-    .group-left {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    /* 中央グループ */
-    .group-center {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: center;
-    }
-
-    /* 中央上段（横3席） */
-    .group-center-top {
-      display: flex;
-      gap: 10px;
-    }
-
-    /* 中央中段（上下2席） */
-    .group-center-middle {
-      display: flex;
-      gap: 10px;
-    }
-
-    /* 中央下段（横3席） */
-    .group-center-bottom {
-      display: flex;
-      gap: 10px;
-    }
-
-    /* 右側グループ（縦1列） */
-    .group-right {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      justify-items: center;
     }
 
     .seat {
-      width: 70px;
-      height: 70px;
+      width: 60px;
+      height: 60px;
       border-radius: 8px;
       border: 2px solid #ccc;
       display: flex;
@@ -104,28 +64,29 @@
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      background: #e8f5e9;
     }
 
+    /* 空席（〇）= 緑 */
     .seat.empty {
-      background: #e8f5e9;
+      background: #c8e6c9;
       border-color: #4caf50;
       color: #2e7d32;
     }
 
+    /* 使用中（×）= 赤 */
     .seat.used {
-      background: #ffebee;
+      background: #ffcdd2;
       border-color: #f44336;
       color: #c62828;
     }
 
     .seat-number {
-      font-size: 12px;
-      margin-bottom: 4px;
+      font-size: 11px;
+      margin-bottom: 3px;
     }
 
     .seat-status {
-      font-size: 24px;
+      font-size: 20px;
     }
 
     .stats {
@@ -134,6 +95,15 @@
       gap: 40px;
       margin-top: 24px;
       font-size: 16px;
+      font-weight: bold;
+    }
+
+    .stats-empty {
+      color: #2e7d32;
+    }
+
+    .stats-used {
+      color: #c62828;
     }
 
     .note {
@@ -158,6 +128,7 @@
       color: #666;
       margin-top: 12px;
       font-size: 14px;
+      grid-column: 1 / -1;
     }
 
     .success {
@@ -174,8 +145,8 @@
     <h2>空席状況</h2>
 
     <div class="legend">
-      <span>〇: 空席</span>
-      <span>×: 使用中</span>
+      <span>〇: 空席（緑）</span>
+      <span>×: 使用中（赤）</span>
     </div>
 
     <div class="layout" id="seatMap">
@@ -183,11 +154,11 @@
     </div>
 
     <div class="stats">
-      <div id="emptyCount">空席: 0</div>
-      <div id="usedCount">使用中: 0</div>
+      <div id="emptyCount" class="stats-empty">空席: 0</div>
+      <div id="usedCount" class="stats-used">使用中: 0</div>
     </div>
 
-    <div class="note">スマホでは横スクロールしてご覧ください</div>
+    <div class="note">最終更新時刻</div>
     <div id="successMessage"></div>
     <div id="errorMessage"></div>
   </div>
@@ -229,7 +200,7 @@
         // 成功メッセージを表示
         const now = new Date().toLocaleTimeString('ja-JP');
         document.getElementById('successMessage').innerHTML = 
-          `<div class="success">最終更新: ${now}</div>`;
+          `<div class="success">${now}</div>`;
 
       } catch (error) {
         console.error('Error fetching data from kintone:', error);
@@ -246,79 +217,30 @@
       let emptyCount = 0;
       let usedCount = 0;
 
-      // 座席情報を取得する関数
-      function getSeatStatus(seatNumber) {
+      // 座席番号の配列（1～20を4列グリッドで配置）
+      const seatNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+
+      // 各座席を作成
+      seatNumbers.forEach(seatNumber => {
         const fieldCode = `席${seatNumber}`;
         const status = record[fieldCode]?.value || '〇';
-        // ★★★ ここから修正 ★★★
+
+        const seat = document.createElement('div');
+        seat.className = `seat ${status === '×' ? 'empty' : 'used'}`;
+        seat.innerHTML = `
+          <div class="seat-number">席${seatNumber}</div>
+          <div class="seat-status">${status}</div>
+        `;
+
+        seatMap.appendChild(seat);
+
+        // 集計
         if (status === '×') {
           emptyCount++;
         } else {
           usedCount++;
         }
-        // ★★★ ここまで修正 ★★★
-        return status;
-      }
-
-      // 座席要素を作成する関数
-      function createSeatElement(seatNumber) {
-        const status = getSeatStatus(seatNumber);
-        const seat = document.createElement('div');
-        // ★★★ ここから修正 ★★★
-        seat.className = `seat ${status === '×' ? 'empty' : 'used'}`;
-        // ★★★ ここまで修正 ★★★
-        seat.innerHTML = `
-          <div class="seat-number">席${seatNumber}</div>
-          <div class="seat-status">${status}</div>
-        `;
-        return seat;
-      }
-
-      // 左側グループ（席10～15）
-      const groupLeft = document.createElement('div');
-      groupLeft.className = 'group-left';
-      for (let i = 10; i <= 15; i++) {
-        groupLeft.appendChild(createSeatElement(i));
-      }
-
-      // 中央グループ
-      const groupCenter = document.createElement('div');
-      groupCenter.className = 'group-center';
-
-      // 中央上段（席16～18）
-      const centerTop = document.createElement('div');
-      centerTop.className = 'group-center-top';
-      for (let i = 16; i <= 18; i++) {
-        centerTop.appendChild(createSeatElement(i));
-      }
-      groupCenter.appendChild(centerTop);
-
-      // 中央中段（席19、20）
-      const centerMiddle = document.createElement('div');
-      centerMiddle.className = 'group-center-middle';
-      centerMiddle.appendChild(createSeatElement(19));
-      centerMiddle.appendChild(createSeatElement(20));
-      groupCenter.appendChild(centerMiddle);
-
-      // 中央下段（席7～9）
-      const centerBottom = document.createElement('div');
-      centerBottom.className = 'group-center-bottom';
-      for (let i = 7; i <= 9; i++) {
-        centerBottom.appendChild(createSeatElement(i));
-      }
-      groupCenter.appendChild(centerBottom);
-
-      // 右側グループ（席1～6）
-      const groupRight = document.createElement('div');
-      groupRight.className = 'group-right';
-      for (let i = 1; i <= 6; i++) {
-        groupRight.appendChild(createSeatElement(i));
-      }
-
-      // 全てを追加
-      seatMap.appendChild(groupLeft);
-      seatMap.appendChild(groupCenter);
-      seatMap.appendChild(groupRight);
+      });
 
       // 統計情報を更新
       document.getElementById('emptyCount').textContent = `空席: ${emptyCount}`;
