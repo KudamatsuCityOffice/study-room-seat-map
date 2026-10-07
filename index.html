@@ -13,13 +13,12 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
       background: #fff;
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      overflow-x: auto;
     }
 
     h1, h2 {
@@ -46,11 +45,52 @@
       font-size: 14px;
     }
 
+    /* 全体レイアウト */
     .layout {
-      min-width: 700px;
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* 左側グループ（縦1列） */
+    .group-left {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* 中央グループ */
+    .group-center {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* 中央上段（横3席） */
+    .group-center-top {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* 中央中段（上下2席） */
+    .group-center-middle {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* 中央下段（横3席） */
+    .group-center-bottom {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* 右側グループ（縦1列） */
+    .group-right {
+      display: flex;
+      flex-direction: column;
       gap: 10px;
     }
 
@@ -206,27 +246,81 @@
       let emptyCount = 0;
       let usedCount = 0;
 
-      // 席1から席20まで順に表示
-      for (let i = 1; i <= 20; i++) {
-        const fieldCode = `席${i}`; // kintoneのフィールドコード
-        const status = record[fieldCode]?.value || '〇'; // デフォルトは空席
-
-        const seat = document.createElement('div');
-        seat.className = `seat ${status === '〇' ? 'empty' : 'used'}`;
-        seat.innerHTML = `
-          <div class="seat-number">席${i}</div>
-          <div class="seat-status">${status}</div>
-        `;
-
-        seatMap.appendChild(seat);
-
-        if (status === '〇') {
+      // 座席情報を取得する関数
+      function getSeatStatus(seatNumber) {
+        const fieldCode = `席${seatNumber}`;
+        const status = record[fieldCode]?.value || '〇';
+        // ★★★ ここから修正 ★★★
+        if (status === '×') {
           emptyCount++;
         } else {
           usedCount++;
         }
+        // ★★★ ここまで修正 ★★★
+        return status;
       }
 
+      // 座席要素を作成する関数
+      function createSeatElement(seatNumber) {
+        const status = getSeatStatus(seatNumber);
+        const seat = document.createElement('div');
+        // ★★★ ここから修正 ★★★
+        seat.className = `seat ${status === '×' ? 'empty' : 'used'}`;
+        // ★★★ ここまで修正 ★★★
+        seat.innerHTML = `
+          <div class="seat-number">席${seatNumber}</div>
+          <div class="seat-status">${status}</div>
+        `;
+        return seat;
+      }
+
+      // 左側グループ（席10～15）
+      const groupLeft = document.createElement('div');
+      groupLeft.className = 'group-left';
+      for (let i = 10; i <= 15; i++) {
+        groupLeft.appendChild(createSeatElement(i));
+      }
+
+      // 中央グループ
+      const groupCenter = document.createElement('div');
+      groupCenter.className = 'group-center';
+
+      // 中央上段（席16～18）
+      const centerTop = document.createElement('div');
+      centerTop.className = 'group-center-top';
+      for (let i = 16; i <= 18; i++) {
+        centerTop.appendChild(createSeatElement(i));
+      }
+      groupCenter.appendChild(centerTop);
+
+      // 中央中段（席19、20）
+      const centerMiddle = document.createElement('div');
+      centerMiddle.className = 'group-center-middle';
+      centerMiddle.appendChild(createSeatElement(19));
+      centerMiddle.appendChild(createSeatElement(20));
+      groupCenter.appendChild(centerMiddle);
+
+      // 中央下段（席7～9）
+      const centerBottom = document.createElement('div');
+      centerBottom.className = 'group-center-bottom';
+      for (let i = 7; i <= 9; i++) {
+        centerBottom.appendChild(createSeatElement(i));
+      }
+      groupCenter.appendChild(centerBottom);
+
+      // 右側グループ（席1～6）
+      const groupRight = document.createElement('div');
+      groupRight.className = 'group-right';
+      for (let i = 1; i <= 6; i++) {
+        groupRight.appendChild(createSeatElement(i));
+      }
+
+      // 全てを追加
+      seatMap.appendChild(groupLeft);
+      seatMap.appendChild(groupCenter);
+      seatMap.appendChild(groupRight);
+
+      // 統計情報を更新
       document.getElementById('emptyCount').textContent = `空席: ${emptyCount}`;
       document.getElementById('usedCount').textContent = `使用中: ${usedCount}`;
     }
