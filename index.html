@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>自習室 空席状況</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+
+    h1, h2 {
+      text-align: center;
+      margin: 0;
+    }
+
+    h2 {
+      margin-top: 8px;
+      margin-bottom: 20px;
+      color: #666;
+      font-weight: normal;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .legend span {
+      font-size: 14px;
+    }
+
+    .layout {
+      min-width: 700px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .seat {
+      width: 70px;
+      height: 70px;
+      border-radius: 8px;
+      border: 2px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      background: #e8f5e9;
+    }
+
+    .seat.empty {
+      background: #e8f5e9;
+      border-color: #4caf50;
+      color: #2e7d32;
+    }
+
+    .seat.used {
+      background: #ffebee;
+      border-color: #f44336;
+      color: #c62828;
+    }
+
+    .seat-number {
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .seat-status {
+      font-size: 24px;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 24px;
+      font-size: 16px;
+    }
+
+    .note {
+      text-align: center;
+      color: #666;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    .error {
+      text-align: center;
+      color: #d32f2f;
+      margin-top: 12px;
+      font-size: 14px;
+      padding: 10px;
+      background: #ffebee;
+      border-radius: 4px;
+    }
+
+    .loading {
+      text-align: center;
+      color: #666;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>自習室</h1>
+    <h2>空席状況</h2>
+
+    <div class="legend">
+      <span>〇: 空席</span>
+      <span>×: 使用中</span>
+    </div>
+
+    <div class="layout" id="seatMap">
+      <div class="loading">読み込み中...</div>
+    </div>
+
+    <div class="stats">
+      <div id="emptyCount">空席: 0</div>
+      <div id="usedCount">使用中: 0</div>
+    </div>
+
+    <div class="note">スマホでは横スクロールしてご覧ください</div>
+    <div id="errorMessage"></div>
+  </div>
+
+  <script>
+    // ★★★ ここから修正してください ★★★
+
+    // kintoneのドメイン（例: https://example.cybozu.com）
+    const KINTONE_DOMAIN = 'https://00flmzqojp9a.cybozu.com/k/';
+
+    // kintoneアプリID（数字のみ、例: 123456）
+    const KINTONE_APP_ID = '428';
+
+    // 生成した閲覧権限のみのAPIトークン
+    const KINTONE_API_TOKEN = 'wBc29PnKJ4FMWxmhUZV7ACSBJ53ERitHhrFpwitx';
+
+    // ★★★ ここまで修正してください ★★★
+
+    // 座席表を生成する関数
+    async function fetchSeatData() {
+      try {
+        const response = await fetch(`${KINTONE_DOMAIN}/k/v1/records.json?app=${KINTONE_APP_ID}`, {
+          method: 'GET',
+          headers: {
+            'X-Cybozu-API-Token': KINTONE_API_TOKEN
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.records.length === 0) {
+          throw new Error('kintoneにレコードが存在しません');
+        }
+
+        // 最新レコードを使用
+        updateSeatMap(data.records[0]);
+      } catch (error) {
+        console.error('Error fetching data from kintone:', error);
+        document.getElementById('errorMessage').innerHTML = 
+          `<div class="error">エラー: ${error.message}</div>`;
+      }
+    }
+
+    // 座席表を更新する関数
+    function updateSeatMap(record) {
+      const seatMap = document.getElementById('seatMap');
+      seatMap.innerHTML = ''; // 既存の内容をクリア
+
+      let emptyCount = 0;
+      let usedCount = 0;
+
+      // 席1から席20まで順に表示
+      for (let i = 1; i <= 20; i++) {
+        const fieldCode = `席${i}`; // kintoneのフィールドコード
+        const status = record[fieldCode]?.value || '〇'; // デフォルトは空席
+
+        const seat = document.createElement('div');
+        seat.className = `seat ${status === '〇' ? 'empty' : 'used'}`;
+        seat.innerHTML = `
+          <div class="seat-number">席${i}</div>
+          <div class="seat-status">${status}</div>
+        `;
+
+        seatMap.appendChild(seat);
+
+        if (status === '〇') {
+          emptyCount++;
+        } else {
+          usedCount++;
+        }
+      }
+
+      document.getElementById('emptyCount').textContent = `空席: ${emptyCount}`;
+      document.getElementById('usedCount').textContent = `使用中: ${usedCount}`;
+    }
+
+    // ページ読み込み時にデータを取得
+    window.addEventListener('load', function() {
+      fetchSeatData();
+      
+      // 30秒ごとに自動更新
+      setInterval(fetchSeatData, 30000);
+    });
+  </script>
+</body>
+</html>
