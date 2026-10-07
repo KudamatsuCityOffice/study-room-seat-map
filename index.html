@@ -161,7 +161,8 @@
     // 座席表を生成する関数
     async function fetchSeatData() {
       try {
-        const response = await fetch(`${KINTONE_DOMAIN}/k/v1/records.json?app=${KINTONE_APP_ID}`, {
+        // プロキシサーバー経由でkintone APIにアクセス
+        const response = await fetch(`https://cors-anywhere.herokuapp.com/${KINTONE_DOMAIN}/k/v1/records.json?app=${KINTONE_APP_ID}`, {
           method: 'GET',
           headers: {
             'X-Cybozu-API-Token': KINTONE_API_TOKEN
