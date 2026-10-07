@@ -87,6 +87,15 @@
       color: #c62828;
     }
 
+    /* 出入口 */
+    .entrance {
+      background: transparent;
+      border: none;
+      color: #666;
+      font-size: 12px;
+      font-weight: normal;
+    }
+
     .seat-number {
       font-size: 10px;
       margin-bottom: 2px;
@@ -255,13 +264,21 @@
         return seat;
       }
 
+      // 出入口要素を作成する関数
+      function createEntranceElement() {
+        const entrance = document.createElement('div');
+        entrance.className = 'seat entrance';
+        entrance.innerHTML = '出入口';
+        return entrance;
+      }
+
       // グリッドレイアウト定義
       // (X, Y) = (縦, 横)
       const grid = [
         // 1段目
         [null, 'seat16', 'seat17', 'seat18', null],
-        // 2段目（全て空白）
-        [null, null, null, null, null],
+        // 2段目（2,1は出入口）
+        ['entrance', null, null, null, null],
         // 3段目
         ['seat15', null, 'seat19', null, 'seat1'],
         // 4段目
@@ -274,8 +291,8 @@
         ['seat11', null, 'seat20', null, 'seat5'],
         // 8段目
         ['seat10', null, 'seat20', null, 'seat6'],
-        // 9段目（全て空白）
-        [null, null, null, null, null],
+        // 9段目（9,1は出入口）
+        ['entrance', null, null, null, null],
         // 10段目
         [null, 'seat9', 'seat8', 'seat7', null]
       ];
@@ -294,24 +311,31 @@
           }
 
           // 既に処理済みの座席はスキップ
-          if (processedSeats.has(seatCode)) {
+          if (processedSeats.has(seatCode + '_' + x + '_' + y)) {
             continue;
           }
 
-          // 座席番号を抽出
-          const seatNumber = parseInt(seatCode.replace('seat', ''));
-          
-          // 席19と席20は3マスを使用
-          const isTall = (seatNumber === 19 || seatNumber === 20);
-          
-          const seatElement = createSeatElement(seatNumber, isTall);
+          let seatElement;
+
+          if (seatCode === 'entrance') {
+            // 出入口
+            seatElement = createEntranceElement();
+          } else {
+            // 座席番号を抽出
+            const seatNumber = parseInt(seatCode.replace('seat', ''));
+            
+            // 席19と席20は3マスを使用
+            const isTall = (seatNumber === 19 || seatNumber === 20);
+            
+            seatElement = createSeatElement(seatNumber, isTall);
+          }
           
           // グリッド位置を設定
           seatElement.style.gridColumn = y + 1;
           seatElement.style.gridRow = x + 1;
           
           seatMap.appendChild(seatElement);
-          processedSeats.add(seatCode);
+          processedSeats.add(seatCode + '_' + x + '_' + y);
         }
       }
 
