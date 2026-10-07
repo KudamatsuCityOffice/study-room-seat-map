@@ -274,23 +274,24 @@
 
       // グリッドレイアウト定義
       // (X, Y) = (縦, 横)
+      // 席19と席20は3マスを占めるため、最初に出現する行のみに記載
       const grid = [
         // 1段目
         [null, 'seat16', 'seat17', 'seat18', null],
         // 2段目（2,1は出入口）
         ['entrance', null, null, null, null],
-        // 3段目
+        // 3段目（席19と席20が開始）
         ['seat15', null, 'seat19', null, 'seat1'],
-        // 4段目
-        ['seat14', null, 'seat19', null, 'seat2'],
-        // 5段目
-        ['seat13', null, 'seat19', null, 'seat3'],
-        // 6段目
+        // 4段目（席19と席20は継続）
+        ['seat14', null, null, null, 'seat2'],
+        // 5段目（席19と席20は継続）
+        ['seat13', null, null, null, 'seat3'],
+        // 6段目（席20が開始）
         ['seat12', null, 'seat20', null, 'seat4'],
-        // 7段目
-        ['seat11', null, 'seat20', null, 'seat5'],
-        // 8段目
-        ['seat10', null, 'seat20', null, 'seat6'],
+        // 7段目（席20は継続）
+        ['seat11', null, null, null, 'seat5'],
+        // 8段目（席20は継続）
+        ['seat10', null, null, null, 'seat6'],
         // 9段目（9,1は出入口）
         ['entrance', null, null, null, null],
         // 10段目
@@ -311,7 +312,7 @@
           }
 
           // 既に処理済みの座席はスキップ
-          if (processedSeats.has(seatCode + '_' + x + '_' + y)) {
+          if (processedSeats.has(seatCode)) {
             continue;
           }
 
@@ -335,7 +336,7 @@
           seatElement.style.gridRow = x + 1;
           
           seatMap.appendChild(seatElement);
-          processedSeats.add(seatCode + '_' + x + '_' + y);
+          processedSeats.add(seatCode);
         }
       }
 
