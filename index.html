@@ -312,7 +312,7 @@
           }
 
           // 既に処理済みの座席はスキップ
-          if (processedSeats.has(seatCode)) {
+          if (processedSeats.has(seatCode + '_' + x + '_' + y)) {
             continue;
           }
 
@@ -336,7 +336,7 @@
           seatElement.style.gridRow = x + 1;
           
           seatMap.appendChild(seatElement);
-          processedSeats.add(seatCode);
+          processedSeats.add(seatCode + '_' + x + '_' + y);
         }
       }
 
