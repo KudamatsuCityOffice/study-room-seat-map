@@ -49,16 +49,21 @@
     .layout {
       display: flex;
       justify-content: center;
-      gap: 20px;
+      gap: 15px;
       margin-bottom: 20px;
-      flex-wrap: wrap;
     }
 
-    /* 左側グループ（縦1列：席10～15） */
+    /* 左側グループ（縦1列：席15～10） */
     .group-left {
       display: flex;
       flex-direction: column;
       gap: 10px;
+    }
+
+    /* スペーサー */
+    .spacer {
+      width: 50px;
+      height: 50px;
     }
 
     /* 中央グループ */
@@ -75,19 +80,20 @@
       gap: 10px;
     }
 
-    /* 中央中段（上下2席：席19、20） */
-    .group-center-middle {
+    /* 中央第2段（席19、席17、席20） */
+    .group-center-second {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* 中央第3段（横3席：席9、席8、席7） */
+    .group-center-third {
       display: flex;
       gap: 10px;
     }
 
-    /* 中央下段（横3席：席7～9） */
-    .group-center-bottom {
-      display: flex;
-      gap: 10px;
-    }
-
-    /* 右側グループ（縦1列：席1～6） */
+    /* 右側グループ（縦1列：席6～1） */
     .group-right {
       display: flex;
       flex-direction: column;
@@ -290,6 +296,10 @@
       for (let i = 15; i >= 10; i--) {
         groupLeft.appendChild(createSeatElement(i));
       }
+      // スペーサーを追加（1段下げる）
+      const spacerLeft = document.createElement('div');
+      spacerLeft.className = 'spacer';
+      groupLeft.appendChild(spacerLeft);
 
       // 中央グループ
       const groupCenter = document.createElement('div');
@@ -303,20 +313,21 @@
       }
       groupCenter.appendChild(centerTop);
 
-      // 中央中段（席19、20）
-      const centerMiddle = document.createElement('div');
-      centerMiddle.className = 'group-center-middle';
-      centerMiddle.appendChild(createSeatElement(19));
-      centerMiddle.appendChild(createSeatElement(20));
-      groupCenter.appendChild(centerMiddle);
+      // 中央第2段（席19、席17、席20）
+      const centerSecond = document.createElement('div');
+      centerSecond.className = 'group-center-second';
+      centerSecond.appendChild(createSeatElement(19));
+      centerSecond.appendChild(createSeatElement(17));
+      centerSecond.appendChild(createSeatElement(20));
+      groupCenter.appendChild(centerSecond);
 
-      // 中央下段（席7～9）
-      const centerBottom = document.createElement('div');
-      centerBottom.className = 'group-center-bottom';
-      for (let i = 7; i <= 9; i++) {
-        centerBottom.appendChild(createSeatElement(i));
-      }
-      groupCenter.appendChild(centerBottom);
+      // 中央第3段（席9、席8、席7）
+      const centerThird = document.createElement('div');
+      centerThird.className = 'group-center-third';
+      centerThird.appendChild(createSeatElement(9));
+      centerThird.appendChild(createSeatElement(8));
+      centerThird.appendChild(createSeatElement(7));
+      groupCenter.appendChild(centerThird);
 
       // 右側グループ（席6～1、上から下へ）
       const groupRight = document.createElement('div');
@@ -324,6 +335,10 @@
       for (let i = 6; i >= 1; i--) {
         groupRight.appendChild(createSeatElement(i));
       }
+      // スペーサーを追加（1段下げる）
+      const spacerRight = document.createElement('div');
+      spacerRight.className = 'spacer';
+      groupRight.appendChild(spacerRight);
 
       // 全てを追加
       seatMap.appendChild(groupLeft);
