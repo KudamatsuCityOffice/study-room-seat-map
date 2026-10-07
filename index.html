@@ -259,7 +259,7 @@
       // 座席情報を取得する関数
       function getSeatStatus(seatNumber) {
         const fieldCode = `席${seatNumber}`;
-        const status = record[fieldCode]?.value || '〇';
+        const status = record[fieldCode]?.value?.value || '〇';
         return status;
       }
 
@@ -268,16 +268,14 @@
         const status = getSeatStatus(seatNumber);
         const seat = document.createElement('div');
         
-        // ★★★ ここから修正 ★★★
         // 〇 = 空席（緑）、× = 使用中（赤）
-        if (status === '〇') {
+        if (status === '○') {
           seat.className = 'seat empty';
           emptyCount++;
         } else {
           seat.className = 'seat used';
           usedCount++;
         }
-        // ★★★ ここまで修正 ★★★
         
         seat.innerHTML = `
           <div class="seat-number">席${seatNumber}</div>
@@ -286,7 +284,7 @@
         return seat;
       }
 
-      // 左側グループ（席10～15、上から下へ）
+      // 左側グループ（席15～10、上から下へ）
       const groupLeft = document.createElement('div');
       groupLeft.className = 'group-left';
       for (let i = 15; i >= 10; i--) {
@@ -320,7 +318,7 @@
       }
       groupCenter.appendChild(centerBottom);
 
-      // 右側グループ（席1～6、上から下へ）
+      // 右側グループ（席6～1、上から下へ）
       const groupRight = document.createElement('div');
       groupRight.className = 'group-right';
       for (let i = 6; i >= 1; i--) {
