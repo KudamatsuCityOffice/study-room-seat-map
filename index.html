@@ -42,8 +42,8 @@
     /* グリッドレイアウト */
     .layout {
       display: grid;
-      grid-template-columns: repeat(7, 40px);
-      grid-template-rows: repeat(8, 40px);
+      grid-template-columns: repeat(14, 40px);
+      grid-template-rows: repeat(16, 40px);
       gap: 8px;
       margin-bottom: 20px;
       justify-content: center;
@@ -59,6 +59,14 @@
       align-items: center;
       justify-content: center;
       font-weight: bold;
+    }
+
+    /* 2x2マスを結合した座席 */
+    .seat.merged {
+      width: 96px;
+      height: 96px;
+      grid-column: span 2;
+      grid-row: span 2;
     }
 
     /* 空席（○）= 緑 */
@@ -85,18 +93,12 @@
     }
 
     .seat-number {
-      font-size: 8px;
-      margin-bottom: 1px;
+      font-size: 10px;
+      margin-bottom: 2px;
     }
 
     .seat-status {
-      font-size: 14px;
-    }
-
-    /* 席15、16、17、18を中央に配置 */
-    .seat.center-align {
-      align-items: center;
-      justify-content: center;
+      font-size: 18px;
     }
 
     .stats {
@@ -237,18 +239,15 @@
         const status = getSeatStatus(seatNumber);
         const seat = document.createElement('div');
         
+        seat.className = 'seat merged';
+        
         // ○ = 空席（緑）、× = 使用中（赤）
         if (status === '○') {
-          seat.className = 'seat empty';
+          seat.classList.add('empty');
           emptyCount++;
         } else {
-          seat.className = 'seat used';
+          seat.classList.add('used');
           usedCount++;
-        }
-
-        // 席15、16、17、18を中央に配置
-        if ([15, 16, 17, 18].includes(seatNumber)) {
-          seat.classList.add('center-align');
         }
         
         seat.innerHTML = `
@@ -261,68 +260,59 @@
       // 出入口要素を作成する関数
       function createEntranceElement() {
         const entrance = document.createElement('div');
-        entrance.className = 'seat entrance';
+        entrance.className = 'seat merged entrance';
         entrance.innerHTML = '出入口';
         return entrance;
       }
 
-      // グリッドレイアウト定義
-      // (X, Y) = (縦, 横)
-      const grid = [
-        // 1段目
-        [null, 'seat11', 'seat12', null, 'seat13', 'seat14', null],
-        // 2段目（全て空白）
-        [null, null, null, null, null, null, null],
-        // 3段目
-        ['seat10', null, null, null, null, null, 'seat1'],
-        // 4段目
-        ['seat9', null, 'seat15', 'seat16', null, null, 'seat2'],
-        // 5段目
-        [null, null, 'seat17', 'seat18', null, null, null],
-        // 6段目
-        ['seat8', null, null, null, null, null, 'seat3'],
-        // 7段目
-        ['seat7', null, null, null, null, null, 'seat4'],
-        // 8段目
-        [null, 'entrance', null, 'seat6', 'seat5', null, null]
+      // 結合座席の定義
+      const mergedSeats = [
+        { x: 1, y: 3, seatNumber: 11 },
+        { x: 1, y: 5, seatNumber: 12 },
+        { x: 1, y: 9, seatNumber: 13 },
+        { x: 1, y: 11, seatNumber: 14 },
+        { x: 5, y: 1, seatNumber: 10 },
+        { x: 5, y: 13, seatNumber: 1 },
+        { x: 7, y: 1, seatNumber: 9 },
+        { x: 7, y: 6, seatNumber: 15 },
+        { x: 7, y: 8, seatNumber: 16 },
+        { x: 7, y: 13, seatNumber: 2 },
+        { x: 9, y: 6, seatNumber: 17 },
+        { x: 9, y: 8, seatNumber: 18 },
+        { x: 11, y: 1, seatNumber: 8 },
+        { x: 11, y: 13, seatNumber: 3 },
+        { x: 13, y: 1, seatNumber: 7 },
+        { x: 13, y: 13, seatNumber: 4 },
+        { x: 15, y: 3, seatNumber: null, isEntrance: true },
+        { x: 15, y: 7, seatNumber: 6 },
+        { x: 15, y: 9, seatNumber: 5 }
       ];
 
       // 処理済みの座席を追跡
       const processedSeats = new Set();
 
-      // グリッドを生成
-      for (let x = 0; x < grid.length; x++) {
-        for (let y = 0; y < grid[x].length; y++) {
-          const seatCode = grid[x][y];
-          
-          if (!seatCode) {
-            // 空白
-            continue;
-          }
-
-          // 既に処理済みの座席はスキップ
-          if (processedSeats.has(seatCode + '_' + x + '_' + y)) {
-            continue;
-          }
-
-          let seatElement;
-
-          if (seatCode === 'entrance') {
-            // 出入口
-            seatElement = createEntranceElement();
-          } else {
-            // 座席番号を抽出
-            const seatNumber = parseInt(seatCode.replace('seat', ''));
-            seatElement = createSeatElement(seatNumber);
-          }
-          
-          // グリッド位置を設定
-          seatElement.style.gridColumn = y + 1;
-          seatElement.style.gridRow = x + 1;
-          
-          seatMap.appendChild(seatElement);
-          processedSeats.add(seatCode + '_' + x + '_' + y);
+      // 結合座席を生成
+      for (const seat of mergedSeats) {
+        const key = `${seat.x}_${seat.y}`;
+        
+        if (processedSeats.has(key)) {
+          continue;
         }
+
+        let seatElement;
+
+        if (seat.isEntrance) {
+          seatElement = createEntranceElement();
+        } else {
+          seatElement = createSeatElement(seat.seatNumber);
+        }
+        
+        // グリッド位置を設定
+        seatElement.style.gridColumn = seat.y;
+        seatElement.style.gridRow = seat.x;
+        
+        seatMap.appendChild(seatElement);
+        processedSeats.add(key);
       }
 
       // 統計情報を更新
@@ -340,4 +330,3 @@
   </script>
 </body>
 </html>
-
