@@ -93,6 +93,12 @@
       font-size: 14px;
     }
 
+    /* 席15、16、17、18を中央に配置 */
+    .seat.center-align {
+      align-items: center;
+      justify-content: center;
+    }
+
     .stats {
       display: flex;
       justify-content: center;
@@ -169,7 +175,7 @@
     // ★★★ ここから修正してください ★★★
 
     // Google Apps ScriptのデプロイURL
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbx7x76PD34x02ywLm0I8eIfBrA-SwN9HMEpJJ8Cz4ULEu-JN3xRNgwPlcVURhY7EOEX/exec';
+    const GAS_URL = 'https://script.google.com/macros/d/xxxxxxxxxxxxxx/userweb';
 
     // ★★★ ここまで修正してください ★★★
 
@@ -238,6 +244,11 @@
         } else {
           seat.className = 'seat used';
           usedCount++;
+        }
+
+        // 席15、16、17、18を中央に配置
+        if ([15, 16, 17, 18].includes(seatNumber)) {
+          seat.classList.add('center-align');
         }
         
         seat.innerHTML = `
@@ -330,5 +341,3 @@
 </body>
 </html>
 
-</body>
-</html>
